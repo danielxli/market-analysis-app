@@ -1,0 +1,9 @@
+#photoBoxParent {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+img {
+  max-width: 300px;
+}
