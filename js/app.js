@@ -1,16 +1,34 @@
 var productNames = ['bag', 'banana', 'boots', 'chair', 'cthulhu', 'dragon', 'pen', 'scissors', 'shark', 'sweep', 'unicorn', 'usb', 'water_can', 'wine_glass'];
 var products = [];
 var voteCounter = 0;
+var data = {
+    labels: ["January", "February", "March", "April", "May", "June", "July"],
+    datasets: [
+        {
+            label: "Appearances - Votes",
+            fillColor: "rgba(220,220,220,0.5)",
+            strokeColor: "rgba(220,220,220,0.8)",
+            highlightFill: "rgba(220,220,220,0.75)",
+            highlightStroke: "rgba(220,220,220,1)",
+            data: [65, 59, 80, 81, 56, 55, 40]
+        },
+        {
+            label: "Votes",
+            fillColor: "rgba(151,187,205,0.5)",
+            strokeColor: "rgba(151,187,205,0.8)",
+            highlightFill: "rgba(151,187,205,0.75)",
+            highlightStroke: "rgba(151,187,205,1)",
+            data: [28, 48, 40, 19, 86, 27, 90]
+        }
+    ]
+};
+
 
 function Product (name) {
   this.productName = name;
   this.votes = 0;
   this.appearances = 0;
   products.push(this);
-}
-
-for (name in productNames) {
-  new Product(productNames[name]);
 }
 
 var tracker = {
@@ -44,16 +62,16 @@ var tracker = {
     }
   },
 
-  updateMessageBox: function(message) {
-    var messageEl = document.getElementById('message-box');
-    messageEl.innerHTML = ''
-    this.createTextElAndAppend('h2', message, messageEl);
-  },
-
   createTextElAndAppend: function(type, content, whereToAppend) {
     var el = document.createElement(type);
     el.innerHTML = content;
     whereToAppend.appendChild(el);
+  },
+
+  updateMessageBox: function(message) {
+    var messageEl = document.getElementById('message-box');
+    messageEl.innerHTML = ''
+    this.createTextElAndAppend('h2', message, messageEl);
   },
 
   createImgAndAppend: function(path, id, whereToAppend) {
@@ -79,11 +97,11 @@ var tracker = {
     })
     var tableEl = document.createElement('table');
     var trEl = document.createElement('tr');
-    this.createTextElAndAppend('th','',trEl);
-    this.createTextElAndAppend('th','Votes',trEl);
-    this.createTextElAndAppend('th','Appearances',trEl);
-    this.createTextElAndAppend('th','Votes / Appearances',trEl);
-    this.createTextElAndAppend('th','Votes / Total Votes',trEl);
+    this.createTextElAndAppend('th', '', trEl);
+    this.createTextElAndAppend('th', 'Votes', trEl);
+    this.createTextElAndAppend('th', 'Appearances', trEl);
+    this.createTextElAndAppend('th', 'Votes / Appearances', trEl);
+    this.createTextElAndAppend('th', 'Votes / Total Votes', trEl);
     tableEl.appendChild(trEl);
     for (prod in products) {
       var trEl = document.createElement('tr');
@@ -106,22 +124,48 @@ var tracker = {
     for (i = 0; i < photoBoxEls.length; i++) {
       photoBoxEls[i].innerHTML = '';
     }
-  }
+  },
 
+  prepData: function() {
+    data.labels = [];
+    data.datasets[0].data = [];
+    data.datasets[1].data = [];
+    products.sort(function(a,b) {
+      return b.votes - a.votes;
+    })
+
+    for (prod in products) {
+      console.log(products[prod]);
+      data.labels.push(products[prod].productName);
+      data.datasets[0].data.push(products[prod].appearances - products[prod].votes);
+      data.datasets[1].data.push(products[prod].votes);
+    }
+  },
+
+  createChart: function() {
+    tracker.prepData();
+    var ctx = document.getElementById("myChart").getContext("2d");
+    var myNewChart = new Chart(ctx).StackedBar(data);
+  },
+
+  onClick: function() {
+    tracker.hideResults();
+    tracker.incrementVotes(event.target.id);
+    tracker.clearPhotos();
+    tracker.displayThreeImages(products);
+    tracker.updateMessageBox('Please vote ' + (15 - voteCounter % 15) + ' more times');
+    if (voteCounter % 15 === 0) {
+      tracker.displayResults();
+      tracker.createChart();
+    }
+  }
 }
 
-window.addEventListener('load', function() {
+window.onload = function() {
+  for (name in productNames) {
+    new Product(productNames[name]);
+  }
   tracker.updateMessageBox('click the item you are most likely to buy!');
   tracker.displayThreeImages(products);
-});
-
-document.addEventListener('click', function() {
-  tracker.hideResults();
-  tracker.incrementVotes(event.target.id);
-  tracker.clearPhotos();
-  tracker.displayThreeImages(products);
-  tracker.updateMessageBox('Please vote ' + (15-voteCounter%15) + ' more times');
-  if (voteCounter % 15 === 0) {
-    tracker.displayResults();
-  }
-});
+  document.addEventListener('click', tracker.onClick);
+};
