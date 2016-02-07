@@ -50,10 +50,28 @@ var lineData = {
 };
 
 function randomizeData() {
-  for (i = 0; i < barData.datasets.data.length; i++) {
-    barData.datasets.data[i] = Math.floor(Math.random() * 100);
+  if (myNewChart.name === "Bar") {
+    for (j = 0; j < lineData.datasets.length; j++) {
+      for (i = 0; i < barData.datasets[j].data.length; i++) {
+        barData.datasets[j].data[i] = Math.floor(Math.random() * 90);
+      }
+    }
+    loadBarChart();
+  } else if (myNewChart.name === "StackedBar") {
+    for (j = 0; j < lineData.datasets.length; j++) {
+      for (i = 0; i < barData.datasets[j].data.length; i++) {
+        barData.datasets[j].data[i] = Math.floor(Math.random() * 90);
+      }
+    }
+    loadStackedBar();
+  } else if (myNewChart.name === "Line") {
+    for (j = 0; j < lineData.datasets.length; j++) {
+      for (i = 0; i < lineData.datasets[j].data.length; i++) {
+        lineData.datasets[j].data[i] = Math.floor(Math.random() * 90);
+      }
+    }
+    loadLineChart();
   }
-  myNewChart.update()
 }
 
 function clearCanvas() {

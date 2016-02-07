@@ -148,7 +148,6 @@ var tracker = {
       var doughnutObj = {};
       doughnutObj.value = products[prod].votes;
       doughnutObj.label = products[prod].productName;
-      console.log(doughnutObj);
       doughnutData.push(doughnutObj);
     }
   },
@@ -166,7 +165,6 @@ var tracker = {
     tracker.createTextElAndAppend('p', 'The blue bar is number of votes, height of blue + gray bar is total appearances.', document.getElementById('chart-section'));
 
     tracker.createTextElAndAppend('h3', 'Voting Results (Doughnut)', document.getElementById('chart-section'));
-    tracker.prepData();
     var can2 = document.createElement('canvas');
     can2.width = '800';
     can2.height = '500';
