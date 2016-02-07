@@ -1,7 +1,7 @@
 var productNames = ['bag', 'banana', 'boots', 'chair', 'cthulhu', 'dragon', 'pen', 'scissors', 'shark', 'sweep', 'unicorn', 'usb', 'water_can', 'wine_glass'];
 var products = [];
 var voteCounter = 0;
-var data = {
+var barData = {
     labels: ["January", "February", "March", "April", "May", "June", "July"],
     datasets: [
         {
@@ -22,6 +22,7 @@ var data = {
         }
     ]
 };
+var doughnutData = [];
 
 
 function Product (name) {
@@ -33,10 +34,14 @@ function Product (name) {
 
 var tracker = {
   pickThreeRandomFrom: function(array) {
+    array.sort(function(a,b) {
+      return a.appearances - b.appearances;
+    })
     var randomPositionInArray = 0;
     var tempArray = [];
-    for (i = 0; i < 3; i++ ) {
-      randomPositionInArray = Math.floor(Math.random() * array.length);
+    tempArray.push(array.splice(randomPositionInArray,1)[0]);
+    for (i = 0; i < 2; i++ ) {
+      randomPositionInArray = Math.floor(Math.random() * array.length) - 1;
       tempArray.push(array.splice(randomPositionInArray,1)[0]);
     }
     for (i = 0; i < tempArray.length; i++) {
@@ -117,6 +122,7 @@ var tracker = {
 
   hideResults: function() {
     document.getElementById('results-section').innerHTML ='';
+    document.getElementById('chart-section').innerHTML = '';
   },
 
   clearPhotos: function() {
@@ -127,36 +133,61 @@ var tracker = {
   },
 
   prepData: function() {
-    data.labels = [];
-    data.datasets[0].data = [];
-    data.datasets[1].data = [];
+    barData.labels = [];
+    barData.datasets[0].data = [];
+    barData.datasets[1].data = [];
     products.sort(function(a,b) {
       return b.votes - a.votes;
     })
 
     for (prod in products) {
-      console.log(products[prod]);
-      data.labels.push(products[prod].productName);
-      data.datasets[0].data.push(products[prod].appearances - products[prod].votes);
-      data.datasets[1].data.push(products[prod].votes);
+      barData.labels.push(products[prod].productName);
+      barData.datasets[0].data.push(products[prod].appearances - products[prod].votes);
+      barData.datasets[1].data.push(products[prod].votes);
+
+      var doughnutObj = {};
+      doughnutObj.value = products[prod].votes;
+      doughnutObj.label = products[prod].productName;
+      doughnutData.push(doughnutObj);
     }
   },
 
-  createChart: function() {
+  createChart: function(chartId) {
+    tracker.createTextElAndAppend('h3', 'Voting Results (Bar)', document.getElementById('chart-section'));
     tracker.prepData();
-    var ctx = document.getElementById("myChart").getContext("2d");
-    var myNewChart = new Chart(ctx).StackedBar(data);
+    var can = document.createElement('canvas');
+    can.width = '800';
+    can.height = '500';
+    can.id = chartId;
+    document.getElementById('chart-section').appendChild(can);
+    var ctx = document.getElementById(chartId).getContext("2d");
+    var myNewChart = new Chart(ctx).StackedBar(barData);
+    tracker.createTextElAndAppend('p', 'The blue bar is number of votes, height of blue + gray bar is total appearances.', document.getElementById('chart-section'));
+
+    tracker.createTextElAndAppend('h3', 'Voting Results (Doughnut)', document.getElementById('chart-section'));
+    var can2 = document.createElement('canvas');
+    can2.width = '800';
+    can2.height = '500';
+    can2.id = 'pieChart';
+    document.getElementById('chart-section').appendChild(can2);
+    var ctx = document.getElementById('pieChart').getContext("2d");
+    var myNewChart = new Chart(ctx).Doughnut(doughnutData);
+
   },
 
   onClick: function() {
-    tracker.hideResults();
-    tracker.incrementVotes(event.target.id);
-    tracker.clearPhotos();
-    tracker.displayThreeImages(products);
-    tracker.updateMessageBox('Please vote ' + (15 - voteCounter % 15) + ' more times');
-    if (voteCounter % 15 === 0) {
-      tracker.displayResults();
-      tracker.createChart();
+    if(String(event.target).indexOf('Image') > 0) {
+      tracker.hideResults();
+      tracker.incrementVotes(event.target.id);
+      tracker.clearPhotos();
+      tracker.displayThreeImages(products);
+      tracker.updateMessageBox('Please vote ' + (15 - voteCounter % 15) + ' more times');
+      if (voteCounter % 15 === 0) {
+        // tracker.displayResults();
+        tracker.createChart('myChart');
+      }
+    } else {
+      tracker.updateMessageBox('Click an image, dummy!');
     }
   }
 }
@@ -165,7 +196,7 @@ window.onload = function() {
   for (name in productNames) {
     new Product(productNames[name]);
   }
-  tracker.updateMessageBox('click the item you are most likely to buy!');
+  tracker.updateMessageBox('Please click the item you are most likely to buy!');
   tracker.displayThreeImages(products);
   document.addEventListener('click', tracker.onClick);
 };

@@ -10,24 +10,16 @@
   </head>
   <body>
     <header id='index-header'>
-      <h1>Welcome to the market analysis app!</h1>
+      <h1>Playing Around with Graphs</h1>
     </header>
     <main id='index-main'>
-      <section id='message-box'>
-      </section>
-
-      <section id='photoBoxParent'>
-        <div class='photoBoxes' id='photo1'>
-        </div>
-        <div class='photoBoxes' id='photo2'>
-        </div>
-        <div class='photoBoxes' id='photo3'>
-        </div>
-      </section>
-
-      <section id='results-section'>
-      </section>
       <section id='chart-section'>
+        <button type="button" id="bar-button">Bar Graph</button>
+        <button type="button" id="stacked-button">Stacked Bar</button>
+        <button type="button" id="line-button">Line Graph</button>
+        <br />
+        <button type="button" id="randomize-button">Randomize Data</button>
+        <canvas id="myChart" width="800" height="500"></canvas>
       </section>
 
 
@@ -37,6 +29,6 @@
     </footer>
     <script src='js/chart.js'></script>
     <script src='js/chart.stackedbar.js'></script>
-    <script src='js/app.js'></script>
+    <script src='js/chartapp.js'></script>
   </body>
 </html>
