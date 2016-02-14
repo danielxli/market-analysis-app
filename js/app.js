@@ -24,7 +24,6 @@ var barData = {
 };
 var doughnutData = [];
 
-
 function Product (name) {
   this.productName = name;
   this.votes = 0;
@@ -120,9 +119,12 @@ var tracker = {
     document.getElementById('results-section').appendChild(tableEl);
   },
 
-  hideResults: function() {
-    document.getElementById('results-section').innerHTML ='';
-    document.getElementById('chart-section').innerHTML = '';
+  hideSection: function(sectionId) {
+    document.getElementById(sectionId).style.display = 'none';
+  },
+
+  unhideSection: function(sectionId, displayType) {
+    document.getElementById(sectionId).style.display = displayType;
   },
 
   clearPhotos: function() {
@@ -136,6 +138,7 @@ var tracker = {
     barData.labels = [];
     barData.datasets[0].data = [];
     barData.datasets[1].data = [];
+    doughnutData = [];
     products.sort(function(a,b) {
       return b.votes - a.votes;
     })
@@ -153,8 +156,10 @@ var tracker = {
   },
 
   createChart: function(chartId) {
-    tracker.createTextElAndAppend('h3', 'Voting Results (Bar)', document.getElementById('chart-section'));
+    document.getElementById('chart-section').innerHTML= '';
     tracker.prepData();
+
+    tracker.createTextElAndAppend('h3', 'Voting Results (Bar)', document.getElementById('chart-section'));
     var can = document.createElement('canvas');
     can.width = '800';
     can.height = '500';
@@ -172,29 +177,68 @@ var tracker = {
     document.getElementById('chart-section').appendChild(can2);
     var ctx = document.getElementById('pieChart').getContext("2d");
     var myNewChart = new Chart(ctx).Doughnut(doughnutData);
-
   },
 
   onClick: function() {
     if(String(event.target).indexOf('Image') > 0) {
-      tracker.hideResults();
       tracker.incrementVotes(event.target.id);
       tracker.clearPhotos();
       tracker.displayThreeImages(products);
       tracker.updateMessageBox('Please vote ' + (15 - voteCounter % 15) + ' more times');
+      tracker.saveData()
       if (voteCounter % 15 === 0) {
-        // tracker.displayResults();
-        tracker.createChart('myChart');
+        tracker.updateMessageBox("Click to see your results!");
+        tracker.createTextElAndAppend('button', 'Show Results', document.getElementById('message-box'));
+        document.getElementsByTagName('button')[0].addEventListener('click', tracker.resultsClick);
+        tracker.hideSection('photoBoxParent')
       }
     } else {
-      tracker.updateMessageBox('Click an image, dummy!');
+      // tracker.updateMessageBox('Click an image, dummy!');
     }
+  },
+
+  resultsClick: function() {
+    // tracker.displayResults();
+    tracker.createChart('myChart');
+    tracker.unhideSection('chart-section', 'block');
+    tracker.updateMessageBox("Here are your results!");
+    tracker.createTextElAndAppend('button', 'Keep Voting!', document.getElementById('message-box'));
+    document.getElementsByTagName('button')[0].addEventListener('click', tracker.startVoting);
+    tracker.createTextElAndAppend('button', 'Reset Data', document.getElementById('message-box'));
+    document.getElementsByTagName('button')[1].addEventListener('click', tracker.resetData);
+    document.getElementsByTagName('button')[1].addEventListener('click', tracker.startVoting);
+  },
+
+  startVoting: function() {
+    tracker.unhideSection('photoBoxParent', 'flex');
+    tracker.hideSection('chart-section');
+    tracker.clearPhotos();
+    tracker.updateMessageBox('Please click the item you are most likely to buy!');
+    tracker.displayThreeImages(products);
+  },
+
+  saveData: function() {
+    localStorage.setItem('data', JSON.stringify(products));
+  },
+
+  loadData: function() {
+    products = JSON.parse(localStorage.getItem('data'));
+  },
+
+  resetData: function() {
+    localStorage.removeItem('data');
+    window.location.reload();
   }
+
 }
 
 window.onload = function() {
-  for (name in productNames) {
-    new Product(productNames[name]);
+  if (!localStorage.getItem('data')) {
+    for (name in productNames) {
+      new Product(productNames[name]);
+    }
+  } else {
+    tracker.loadData();
   }
   tracker.updateMessageBox('Please click the item you are most likely to buy!');
   tracker.displayThreeImages(products);
